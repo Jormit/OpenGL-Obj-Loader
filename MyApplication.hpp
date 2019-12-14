@@ -5,13 +5,14 @@ class MyApplication : public Application {
 public:
     MyApplication(int width, int height);
     static void mouseCallback(GLFWwindow* window, double xpos, double ypos);
-    int i = 3;
 
 private:
     GLuint vao, vbo, ebo;
     unsigned int texture;
     Shader shaderProgram;
     Camera camera;
+
+    std::vector<Mesh> meshes;
 
     float deltaTime = 0.0;
     float lastFrame = 0.0;

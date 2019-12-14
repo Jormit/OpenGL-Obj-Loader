@@ -17,95 +17,20 @@ MyApplication::MyApplication(int width, int height) :
     lastX = (float) width / 2.0f;
     lastY = (float) height / 2.0f;
 
-    // Define Geometry.
-    // ----------------
-    float vertices[] = {
-         // Position          // Color           // Texture
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-    };
+    meshes.push_back(Mesh("assets/models/cube.obj"));
+    meshes[0].setupBuffers(shaderProgram, "assets/textures/wall.jpg", GL_TEXTURE_2D);
+    meshes[0].translate(glm::vec3(2.0f, 0.0f, 0.0f));
+    meshes[0].rotate(50.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
-    unsigned int indices[] = {
-        0, 1, 3,
-        1, 2, 3
-    };
-
-    // Create vao, vbo, ebo.
-    // ---------------------
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    // Bind to vertex array.
-    glBindVertexArray(vao);
-
-    // Copy vertices into vertex buffer object.
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Copy indices into element buffer object.
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Position attribute.
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // Texture attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // Load and create texure.
-    // -----------------------
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    // Set wrapping parameters.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // Set filtering parameters.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // Load texture image.
-    int tex_width, tex_height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load("assets/textures/wall.jpg", &tex_width, &tex_height, &nrChannels, 0);
-
-    // If texture loaded successfuly then generate mipmaps.
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        cerr << "Could not load texture!" << endl;
-        exit(1);
-    }
-    stbi_image_free(data);
-
-    // Set texture uniform for the shader to use.
-    shaderProgram.use();
-    shaderProgram.setInt("texture", 0);
-
-    // Model, View and Projection transformations.
-    // -------------------------------------------
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    meshes.push_back(Mesh("assets/models/teapot.obj"));
+    meshes[1].setupBuffers(shaderProgram, "assets/textures/wall2.jpg", GL_TEXTURE_2D);
+    meshes[1].translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+    meshes[1].scale(glm::vec3(0.1f, 0.1f, 0.1f));
 
     glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), (float) width / (float) height, 0.1f, 100.0f);
-
-    // Send matrices to vertex shader.
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram.shaderProgram, "model");
+    projection = glm::perspective(glm::radians(45.0f), (float) 800 / (float) 600, 0.1f, 100.0f);
     unsigned int projectionLoc = glGetUniformLocation(shaderProgram.shaderProgram, "projection");
-
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
 
     loop();
 }
@@ -126,7 +51,7 @@ void MyApplication::loop()
         // --------------
         process_input();
 
-        // Set up view matrix.
+        // Set up view matrix to add perspective.
         // ----------------
         unsigned int viewLoc = glGetUniformLocation(shaderProgram.shaderProgram, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
@@ -134,9 +59,8 @@ void MyApplication::loop()
         // Render the screen.
         // ------------------
         shaderProgram.use();
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        meshes[0].draw(shaderProgram);
+        meshes[1].draw(shaderProgram);
 
         // Flip buffers and clear z-buffer.
         // --------------------------------
