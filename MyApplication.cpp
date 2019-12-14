@@ -17,15 +17,14 @@ MyApplication::MyApplication(int width, int height) :
     lastX = (float) width / 2.0f;
     lastY = (float) height / 2.0f;
 
-    meshes.push_back(Mesh("assets/models/cube.obj"));
-    meshes[0].setupBuffers(shaderProgram, "assets/textures/wall.jpg", GL_TEXTURE_2D);
+    meshes.push_back(Mesh("assets/models/Intergalactic_Spaceship.obj"));
+    meshes[0].setupBuffers(shaderProgram, "assets/textures/Intergalactic Spaceship_color_4.jpg", GL_TEXTURE_2D);
     meshes[0].translate(glm::vec3(2.0f, 0.0f, 0.0f));
     meshes[0].scale(glm::vec3(0.5f, 0.5f, 0.5f));
-    meshes[0].rotate(50.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
     meshes.push_back(Mesh("assets/models/teapot.obj"));
     meshes[1].setupBuffers(shaderProgram, "assets/textures/tiles.jpg", GL_TEXTURE_2D);
-    meshes[1].translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+    meshes[1].translate(glm::vec3(-2.0f, 0.0f, 0.0f));
     meshes[1].scale(glm::vec3(0.1f, 0.1f, 0.1f));
 
     glm::mat4 projection;
