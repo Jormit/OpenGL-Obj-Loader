@@ -7,8 +7,6 @@ public:
     static void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 
 private:
-    GLuint vao, vbo, ebo;
-    unsigned int texture;
     Shader shaderProgram;
     Camera camera;
 
